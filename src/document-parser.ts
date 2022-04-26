@@ -421,12 +421,22 @@ export class DocumentParser {
 	}
 
     parseParagraph(node: Element): OpenXmlElement {
-        var result = <WmlParagraph>{ type: DomType.Paragraph, children: [] };
+        var result = <WmlParagraph | WmlHyperlink>{
+			type: DomType.Paragraph,
+			children: [],
+		};
 
         xmlUtil.foreach(node, c => {
             switch (c.localName) {
-                case "r":
-                    result.children.push(this.parseRun(c, result));
+				case "r":
+					if (c.textContent.includes("HYPERLINK")) {
+						result = result as WmlHyperlink;
+						result.type = DomType.Hyperlink;
+						result.href = c.textContent.match(/"(.*?)"/)[1];
+					} else {
+						result.children.push(this.parseRun(c, result));
+					}
+                    // result.children.push(this.parseRun(c, result));
                     break;
 
                 case "hyperlink":
@@ -442,7 +452,7 @@ export class DocumentParser {
                     break;
 
                 case "pPr":
-                    this.parseParagraphProperties(c, result);
+                    this.parseParagraphProperties(c, result as WmlParagraph);
                     break;
             }
         });
@@ -490,7 +500,8 @@ export class DocumentParser {
     parseHyperlink(node: Element, parent?: OpenXmlElement): WmlHyperlink {
         var result: WmlHyperlink = <WmlHyperlink>{ type: DomType.Hyperlink, parent: parent, children: [] };
         var anchor = xml.attr(node, "anchor");
-
+		var id = xml.attr(node, "id");
+		result.id=id
         if (anchor)
             result.href = "#" + anchor;
 

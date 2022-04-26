@@ -752,6 +752,8 @@ section.${c}>article { margin-bottom: auto; }
 		this.renderChildren(elem, result);
 		this.renderStyleValues(elem.cssStyle, result);
 
+		if (elem.id) 
+			result.id=elem.id
 		if (elem.href)
 			result.href = elem.href
 
