@@ -16,7 +16,6 @@ import { ThemePart } from "./theme/theme-part";
 import { EndnotesPart, FootnotesPart } from "./notes/parts";
 import { SettingsPart } from "./settings/settings-part";
 import { CustomPropsPart } from "./document-props/custom-props-part";
-import { DomType,OpenXmlElement } from "./document/dom";
 
 const topLevelRels = [
 	{ type: RelationshipTypes.OfficeDocument, target: "word/document.xml" },
