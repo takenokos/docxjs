@@ -40,8 +40,8 @@ export interface OpenXmlElement {
 }
 
 export interface WmlHyperlink extends OpenXmlElement {
-	href?: string;
 	id?: string;
+    href?: string;
 }
 
 export interface WmlNoteReference extends OpenXmlElement {

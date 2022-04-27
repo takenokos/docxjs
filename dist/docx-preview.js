@@ -561,10 +561,11 @@ class DocumentParser {
     parseHyperlink(node, parent) {
         var result = { type: dom_1.DomType.Hyperlink, parent: parent, children: [] };
         var anchor = xml_parser_1.default.attr(node, "anchor");
-        var id = xml_parser_1.default.attr(node, "id");
-        result.id = id;
+        var relId = xml_parser_1.default.attr(node, "id");
         if (anchor)
             result.href = "#" + anchor;
+        if (relId)
+            result.id = relId;
         xmlUtil.foreach(node, c => {
             switch (c.localName) {
                 case "r":
@@ -2703,10 +2704,14 @@ section.${c}>article { margin-bottom: auto; }
         var result = this.createElement("a");
         this.renderChildren(elem, result);
         this.renderStyleValues(elem.cssStyle, result);
-        if (elem.id)
-            result.id = elem.id;
-        if (elem.href)
+        if (elem.href) {
             result.href = elem.href;
+        }
+        else if (elem.id) {
+            const rel = this.document.documentPart.rels
+                .find(it => it.id == elem.id && it.targetMode === "External");
+            result.href = rel === null || rel === void 0 ? void 0 : rel.target;
+        }
         return result;
     }
     renderDrawing(elem) {
@@ -3685,7 +3690,6 @@ const theme_part_1 = __webpack_require__(/*! ./theme/theme-part */ "./src/theme/
 const parts_2 = __webpack_require__(/*! ./notes/parts */ "./src/notes/parts.ts");
 const settings_part_1 = __webpack_require__(/*! ./settings/settings-part */ "./src/settings/settings-part.ts");
 const custom_props_part_1 = __webpack_require__(/*! ./document-props/custom-props-part */ "./src/document-props/custom-props-part.ts");
-const dom_1 = __webpack_require__(/*! ./document/dom */ "./src/document/dom.ts");
 const topLevelRels = [
     { type: relationship_1.RelationshipTypes.OfficeDocument, target: "word/document.xml" },
     { type: relationship_1.RelationshipTypes.ExtendedProperties, target: "docProps/app.xml" },
@@ -3774,13 +3778,6 @@ class WordDocument {
                 return part;
             const [folder] = (0, utils_1.splitPath)(part.path);
             const rels = part.rels.map(rel => {
-                if (rel.targetMode === "External" &&
-                    this.documentPart &&
-                    this.documentPart.body) {
-                    const obj = getDocumentPart([this.documentPart.body], rel.id, dom_1.DomType.Hyperlink);
-                    if (obj)
-                        obj["href"] = rel.target;
-                }
                 return this.loadRelationshipPart((0, utils_1.resolvePath)(rel.target, folder), rel.type);
             });
             return Promise.all(rels).then(() => part);
@@ -3834,19 +3831,6 @@ function deobfuscate(data, guidKey) {
     return data;
 }
 exports.deobfuscate = deobfuscate;
-function getDocumentPart(data, id, type) {
-    let result;
-    for (let item of data) {
-        if (item.type === type && item["id"] === id) {
-            result = item;
-            break;
-        }
-        else if (item.children && item.children.length > 0) {
-            result = getDocumentPart(item["children"], id, type);
-        }
-    }
-    return result;
-}
 
 
 /***/ }),

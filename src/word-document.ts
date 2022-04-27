@@ -147,19 +147,6 @@ export class WordDocument {
 
 			const [folder] = splitPath(part.path);
 			const rels = part.rels.map(rel => {
-
-			if (
-				rel.targetMode === "External" &&
-				this.documentPart &&
-				this.documentPart.body
-			) {
-				const obj = getDocumentPart(
-					[this.documentPart.body],
-					rel.id,
-					DomType.Hyperlink
-				);
-				if (obj) obj["href"] = rel.target;
-			}
 				return this.loadRelationshipPart(resolvePath(rel.target, folder), rel.type)
 			});
 
@@ -223,21 +210,4 @@ export function deobfuscate(data: Uint8Array, guidKey: string): Uint8Array {
 		data[i] = data[i] ^ numbers[i % len]
 
 	return data;
-}
-
-function getDocumentPart(
-	data: OpenXmlElement[],
-	id: string,
-	type: RelationshipTypes | string
-): OpenXmlElement {
-	let result: OpenXmlElement
-	for (let item of data) {
-		if (item.type === type && item["id"] === id) {
-			result= item;
-			break
-		}else if (item.children && item.children.length > 0) {
-			result= getDocumentPart(item["children"], id, type);
-		}
-	}
-	return result;
 }
